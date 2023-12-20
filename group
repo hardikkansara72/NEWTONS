@@ -1,0 +1,48 @@
+"""
+   Group model 
+"""
+from django.db import models
+from django.utils.translation import gettext_lazy as _ 
+ 
+STATUS_CHOICES = (
+                ('A', _('Active')), 
+                ('I', _('Inactive')))
+           
+
+class Group(models.Model):                       
+    """ 
+    Class represents an group.
+    """
+    name = models.CharField(_('Name'), max_length=150, db_column='name', blank=False, null=False)                              
+    """
+    Name of the group. Maximum 150 characters are allowed in its name and it can not be null.
+    """   
+    code = models.CharField(_('Code'), max_length=48, unique=True, null=False, blank=False, db_column='code')
+    """
+    Short code for the group. Maximum 48 characters are allowed in its code.
+    """                             
+    status = models.CharField(_('Status'), default='A', max_length=1, null=False, db_column='status', blank=False,
+                              choices=STATUS_CHOICES)
+    """
+    Status of the group. Maximum 1 character allowed in its status and it can not be null. It can have two values A:Active, I:Inactive
+    """
+    created_at = models.DateTimeField(_("Created"), db_column='created_at', auto_now_add=True )  
+    """
+    This field represents a creation time of an group.
+    """
+
+
+    def __str__(self):
+        """
+        Arguments: None
+
+        Returns: name.
+        """
+        return self.name
+
+    class Meta:
+        """
+        Meta class for Group
+        """
+        db_table = 'qm_group'
+
