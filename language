@@ -1,0 +1,45 @@
+"""
+Language Model for questionnaire module.
+"""
+
+from django.db import models
+
+STATUS_CHOICES = [
+    ('I', 'Inactive'),
+    ('A', 'Active'),
+    ('D', 'Deleted')
+]
+
+class Language(models.Model):
+    """
+    Class is represent Creating a Language for questionnaire module.
+    """
+
+    name = models.CharField(('Name'), max_length=100, null=False, blank=False, db_column='name')
+    """
+    This field represents name of an language.
+    """
+
+    code = models.CharField(('Code'), max_length=48, null=False, blank=False, db_column='code')
+    """
+    This field represents code of an language.
+    """
+
+    status = models.CharField(('Status'), max_length=1, default='A', null=False,choices=STATUS_CHOICES)
+    """
+    This field represents status of an language.
+    """
+
+    def __str__(self):
+        """
+        Arguments: None
+
+        Returns: name.
+        """
+        return self.name
+
+    class Meta:
+        """
+        Meta class for Language.
+        """
+        db_table = 'language'
