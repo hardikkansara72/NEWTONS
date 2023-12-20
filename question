@@ -1,0 +1,177 @@
+"""
+Question and PlanQuestionMap Model for questionnaire module.
+"""
+from django.db import models
+from bulwark.apps.questionnaire.models.group import Group
+from bulwark.apps.questionnaire.models.language import Language
+from django.utils.translation import gettext_lazy as _ 
+from bulwark.apps.questionnaire.models.plan import Plan
+from django.conf import settings
+
+
+class Question(models.Model):
+    """
+    Class is represent a Creating Question for questionnaire module.
+    """
+    
+    qgroup = models.ForeignKey(Group, verbose_name=_('Group'), db_column='group_id', null=False, blank=False,on_delete=models.CASCADE)
+    """
+    This field represents group of an question.
+    """
+ 
+    code = models.CharField(_('Code'), max_length=48, null=False, blank=False, db_column='code')
+    """
+    This field represents code of an question.
+    """
+    
+    answer_type = models.CharField(_('Answer Type'), max_length=4, null=False, db_column='answer_type', blank=False, choices=settings.QUESTION_ANSWER_TYPES, default='TXT')
+    """
+    This field represents answer type of an question.
+    """
+    
+    created_at = models.DateTimeField(_('Created At'), null=False, auto_now_add=True, db_column='created_at')
+    """
+    This field represents created time of an question.
+    """
+    
+    status = models.CharField(_("Status"), choices=settings.QUESTION_STATUS_CHOICES, default="A", max_length=1, db_column="status", help_text=_("Select the status."))    
+    """
+    This field represents status of an question.
+    """
+    
+    plan_id = models.ManyToManyRel(Plan, to="", through='SurveyPlanQuestionMap')
+
+    def __str__(self):
+        """
+        Arguments: None
+
+        Returns: content.
+        """
+        return self.code
+    
+    def get_fk(self): 
+        return self.qgroup.name
+
+
+    class Meta:
+        """
+        Meta class for Question.
+        """
+        db_table = 'qm_questions'
+    
+        
+
+class QuestionContents(models.Model):
+    
+    question_id = models.ForeignKey(Question, verbose_name=_('Question'), db_column='question_id', null=False, blank=False,on_delete=models.CASCADE)
+    """
+    This field represents group of an question.
+    """
+    
+    language_id = models.ForeignKey(Language, verbose_name=_('Language'), db_column='language_id', null=False, blank=False,on_delete=models.CASCADE)
+    """
+    This field represents group of an languages.
+    """
+    
+    included_at = models.DateTimeField(_('Included At'), null=False, auto_now_add=True, db_column='included_at')
+    """
+    This field represents included time of an question contents.
+    """
+    
+    content = models.TextField(_('Content'), null=False, db_column='content')
+    """
+    This field represents included time of an question contents.
+    """
+    
+    def __str__(self):
+        return self.content
+    
+    class Meta:
+        """
+        Meta class for Question.
+        """
+        db_table = 'qm_question_contents'
+        
+
+class QuestionOptions(models.Model):
+    """
+    Class is represent Question Options.
+    """
+    
+    code = models.CharField(_('Code'), max_length=48, null=False, blank=False, db_column='code')
+    """
+    This field represents code of an question.
+    """
+    
+    question_id = models.ForeignKey(Question, verbose_name=_('Question'), db_column='question_id', null=False, blank=False,on_delete=models.CASCADE)
+    """
+    This field represents group of an question.
+    """
+
+    included_at = models.DateTimeField(_('Included At'), null=False, auto_now_add=True, db_column='included_at')
+    """
+    This field represents included time of an question options.
+    """
+    
+    def __str__(self):
+        return self.code
+    
+    class Meta:
+        """
+        Meta class for Question.
+        """
+        db_table = 'qm_question_options'
+
+
+class OptionContents(models.Model):
+    """
+    Class is represent question contents.
+    """
+    
+    language_id = models.ForeignKey(Language, verbose_name=_('Language'), db_column='language_id', null=False, blank=False,on_delete=models.CASCADE)
+    """
+    This field represents group of an languages.
+    """
+    
+    content = models.TextField(_('Content'), null=False, db_column='content')
+    """
+    This field represents included time of an question options.
+    """
+    
+    included_at = models.DateTimeField(_('Included At'), null=False, auto_now_add=True, db_column='included_at')
+    """
+    This field represents included time of an question options.
+    """
+    
+    def __str__(self):
+        return self.code
+    
+    class Meta:
+        """
+        Meta class for Question.
+        """
+        db_table = 'qm_option_contents'
+    
+
+class SurveyPlanQuestionMap(models.Model):
+    """
+    Class is represent mapping of Plan and question from questionnaire.
+    """
+    
+    plan = models.ForeignKey(Plan, verbose_name=_('Plan'), db_column='plan_id', null=False, blank=False, on_delete=models.CASCADE)
+    """
+    This field represents Plan of an question.
+    """
+
+    question = models.ForeignKey(Question, verbose_name=_('Question'), db_column='question_id', null=False, blank=False, on_delete=models.CASCADE)
+    """
+    This field represents Question.
+    """
+
+    class Meta:
+        """
+        Meta class for PlanQuestionMap.
+        """
+        # db_table = 'qm_plan_question_map'
+        db_table = 'qm_surveyplan_question_map'
+
