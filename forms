@@ -1,0 +1,37 @@
+from django.shortcuts import render, get_object_or_404
+from .forms import PlanLanguageForm
+from .models import Plan, Language, YourModel
+
+def plan_language_edit_view(request, pk):
+    your_model_instance = get_object_or_404(YourModel, pk=pk)
+    initial_data = {
+        'plan': your_model_instance.plan.id,
+        'language': your_model_instance.language.id,
+        'additional_field_1': your_model_instance.additional_field_1,
+        'additional_field_2': your_model_instance.additional_field_2,
+        # Add other initial data from YourModel as needed
+    }
+
+    form = PlanLanguageForm(initial=initial_data)
+    
+    if request.method == 'POST':
+        form = PlanLanguageForm(request.POST)
+        if form.is_valid():
+            plan_id = form.cleaned_data['plan']
+            language_id = form.cleaned_data['language']
+            
+            # Update the related Plan and Language objects
+            plan_instance = Plan.objects.get(id=plan_id)
+            language_instance = Language.objects.get(id=language_id)
+
+            your_model_instance.plan = plan_instance
+            your_model_instance.language = language_instance
+            # Update other fields in YourModel
+            your_model_instance.additional_field_1 = form.cleaned_data['additional_field_1']
+            your_model_instance.additional_field_2 = form.cleaned_data['additional_field_2']
+            # Update other fields in YourModel as needed
+            your_model_instance.save()
+
+            # Redirect or display a success message
+
+    return render(request, 'your_template.html', {'form': form})
