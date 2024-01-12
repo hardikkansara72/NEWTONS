@@ -1,0 +1,6 @@
+{
+    "testing.alwaysRevealTestOnStateChange": true,
+    "testing.automaticallyOpenPeekViewDuringAutoRun": true,
+    "python.terminal.launchArgs": [],
+    "terminal.integrated.env.windows": {}
+}
