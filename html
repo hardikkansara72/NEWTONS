@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey Page</title>
+    
+    <!-- Soft UI Theme CSS (replace with the actual path to the theme CSS file) -->
+    <link rel="stylesheet" href="/path/to/soft-ui-theme.css">
+
+    <!-- Add your custom styles here -->
+    <style>
+        /* Add your custom styles here */
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2>Survey Title</h2>
+                <p>Survey Description</p>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'submit_survey' %}">
+                    {% csrf_token %}
+                    
+                    <!-- Add fields for survey details (if needed) -->
+
+                    {% for question in survey.questions.all %}
+                        <div class="mb-3">
+                            <label for="question_{{ question.id }}">{{ question.text }}</label>
+
+                            {% if question.type == 'text' %}
+                                <textarea id="question_{{ question.id }}" name="answer_{{ question.id }}" class="form-control" required></textarea>
+                            {% elif question.type == 'choice' %}
+                                <select id="question_{{ question.id }}" name="answer_{{ question.id }}" class="form-control" required>
+                                    {% for option in question.options.all %}
+                                        <option value="{{ option.id }}">{{ option.text }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    <button type="submit" class="btn btn-primary">Submit Survey</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Soft UI Theme JS (replace with the actual path to the theme JS file) -->
+    <script src="/path/to/soft-ui-theme.js"></script>
+
+    <!-- Add your custom scripts here -->
+    <script>
+        // Add your custom scripts here
+    </script>
+</body>
+</html>
