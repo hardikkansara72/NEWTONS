@@ -1,0 +1,104 @@
+class Survey(models.Model):                       
+    """ 
+    Class represents an Survey Plans.
+    """
+
+    surveyplan = models.ForeignKey(SurveyPlan, verbose_name=_('Survey Plan'), db_column='surveyplan_id', null=False, blank=False, on_delete=models.CASCADE)
+    """
+    This field represents Surveyplan of an survey.
+    """   
+    
+    authuser = models.ForeignKey(AuthUser, verbose_name=_('Authuser'), db_column='authuser_id', null=False, blank=False, on_delete=models.CASCADE)
+    """
+    This field represents Authuser of an survey.
+    The user starting the survey. Other authorized users too can provide answers to the questions raised in the survey.
+    """   
+    
+    started_at = models.DateTimeField(_("Started At"), db_column='started_at', auto_now_add=True )
+    """
+    This field represent the start time of survey.
+    """
+    
+    finished_at = models.DateTimeField(_("Finished At"), db_column='finished_at', null=True, blank=True)
+    """
+    This field represent the finished time of survey.
+    """
+    
+    status = models.CharField(_("Status"), choices=settings.SURVEY_STATUS_CHOICES, default="A", max_length=1, db_column="status", help_text=_("Select the status."))    
+    """
+    This field represents status of an survey.
+    """
+    
+    class Meta:
+        """
+        Meta class for Survey.
+        """
+        db_table = 'qm_survey'
+
+class SurveyQuestionOptions(models.Model):
+    """
+    This class represent Survey Question Options.
+    """
+    
+    survey = models.ForeignKey(Survey, verbose_name=_('Survey'), db_column='survey_id', null=False, blank=False, on_delete=models.CASCADE)
+    """
+    This field represents Survey of an SurveyQuestionOptions.
+    """
+    
+    question = models.ForeignKey(Question, verbose_name=_('Question'), db_column='question_id', null=False, blank=False, on_delete=models.CASCADE)
+    """
+    This field represents Survey of an SurveyQuestionOptions.
+    """
+    
+    chosen_by = models.ForeignKey(AuthUser, verbose_name=_('Chosen by'), db_column='chosen_by_id', null=False, blank=False, on_delete=models.CASCADE)
+    """
+    This field represents Survey of an SurveyQuestionOptions.
+    """
+    
+    mapped_at = models.DateTimeField(_('Mapped At'), null=False, auto_now_add=True, db_column='mapped_at')
+    """
+    This field represents a creation time of an Survey Question Options.
+    """
+    
+    class Meta:
+        """
+        Meta class for SurveyQuestionOptions.
+        """
+        db_table = 'qm_survey_question_options'
+
+
+class SurveyQuestionAnswers(models.Model):
+    """
+    This class represent the survey question answers fields.
+    """
+    
+    survey = models.ForeignKey(Survey, verbose_name=_('Survey'), db_column='survey_id', null=False, blank=False, on_delete=models.CASCADE)
+    """
+    This field represents Survey of an SurveyQuestionOptions.
+    """
+    
+    question = models.ForeignKey(Question, verbose_name=_('Question'), db_column='question_id', null=False, blank=False, on_delete=models.CASCADE)
+    """
+    This field represents Survey of an SurveyQuestionOptions.
+    """
+    
+    answer = models.TextField(_('Answer'), null=False, db_column='answer')
+    """
+    This field represents answer of an survey question.
+    """
+    
+    chosenanswered_by = models.ForeignKey(AuthUser, verbose_name=_('Chosen Answer by'), db_column='answered_by_id', null=False, blank=False, on_delete=models.CASCADE)
+    """
+    This field represents the answer given by authuser.
+    """
+    
+    answered_at = models.DateTimeField(_('Answerd At'), null=False, auto_now_add=True, db_column='answered_at')
+    """
+    This field represents a creation time of an Survey Question Answer.
+    """
+    
+    class Meta:
+        """
+        Meta class for SurveyQuestionAnswers.
+        """
+        db_table = 'qm_survey_question_answers'
