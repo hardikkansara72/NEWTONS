@@ -1,0 +1,92 @@
+import pytest
+from django.utils import timezone
+from your_app.models import Survey, SurveyQuestionOptions, SurveyQuestionAnswers
+
+@pytest.fixture
+def sample_survey_plan():
+    # Assuming you have a SurveyPlan model, create and return a sample instance.
+    # Replace this with your actual SurveyPlan creation logic.
+    pass
+
+@pytest.fixture
+def sample_auth_user():
+    # Assuming you have an AuthUser model, create and return a sample instance.
+    # Replace this with your actual AuthUser creation logic.
+    pass
+
+@pytest.fixture
+def sample_question():
+    # Assuming you have a Question model, create and return a sample instance.
+    # Replace this with your actual Question creation logic.
+    pass
+
+@pytest.fixture
+def sample_survey(sample_survey_plan, sample_auth_user):
+    # Create and return a sample Survey instance.
+    return Survey.objects.create(
+        surveyplan=sample_survey_plan,
+        authuser=sample_auth_user,
+        started_at=timezone.now(),
+        status='A'
+    )
+
+@pytest.fixture
+def sample_survey_question_options(sample_survey, sample_question, sample_auth_user):
+    # Create and return a sample SurveyQuestionOptions instance.
+    return SurveyQuestionOptions.objects.create(
+        survey=sample_survey,
+        question=sample_question,
+        chosen_by=sample_auth_user
+    )
+
+@pytest.fixture
+def sample_survey_question_answers(sample_survey, sample_question, sample_auth_user):
+    # Create and return a sample SurveyQuestionAnswers instance.
+    return SurveyQuestionAnswers.objects.create(
+        survey=sample_survey,
+        question=sample_question,
+        answer='Sample answer',
+        chosenanswered_by=sample_auth_user
+    )
+
+def test_survey_creation(sample_survey):
+    assert sample_survey.id is not None
+
+def test_survey_question_options_creation(sample_survey_question_options):
+    assert sample_survey_question_options.id is not None
+
+def test_survey_question_answers_creation(sample_survey_question_answers):
+    assert sample_survey_question_answers.id is not None
+
+def test_survey_update(sample_survey):
+    new_status = 'C'
+    sample_survey.status = new_status
+    sample_survey.save()
+    updated_survey = Survey.objects.get(id=sample_survey.id)
+    assert updated_survey.status == new_status
+
+def test_survey_question_options_update(sample_survey_question_options):
+    new_chosen_by = # Replace with a new AuthUser instance
+    sample_survey_question_options.chosen_by = new_chosen_by
+    sample_survey_question_options.save()
+    updated_options = SurveyQuestionOptions.objects.get(id=sample_survey_question_options.id)
+    assert updated_options.chosen_by == new_chosen_by
+
+def test_survey_question_answers_update(sample_survey_question_answers):
+    new_answer = 'Updated answer'
+    sample_survey_question_answers.answer = new_answer
+    sample_survey_question_answers.save()
+    updated_answer = SurveyQuestionAnswers.objects.get(id=sample_survey_question_answers.id)
+    assert updated_answer.answer == new_answer
+
+def test_survey_query(sample_survey):
+    queried_survey = Survey.objects.get(id=sample_survey.id)
+    assert queried_survey == sample_survey
+
+def test_survey_question_options_query(sample_survey_question_options):
+    queried_options = SurveyQuestionOptions.objects.get(id=sample_survey_question_options.id)
+    assert queried_options == sample_survey_question_options
+
+def test_survey_question_answers_query(sample_survey_question_answers):
+    queried_answer = SurveyQuestionAnswers.objects.get(id=sample_survey_question_answers.id)
+    assert queried_answer == sample_survey_question_answers
