@@ -1,30 +1,33 @@
 """
 Question and PlanQuestionMap Model for questionnaire module.
 """
+
 from django.db import models
-from bulwark.apps.questionnaire.models.group import Group
+from bulwark.apps.questionnaire.models.qgroup import QGroup
 from bulwark.apps.questionnaire.models.language import Language
 from django.utils.translation import gettext_lazy as _ 
-from bulwark.apps.questionnaire.models.plan import Plan
+from bulwark.apps.questionnaire.models.surveyplan import SurveyPlan
 from django.conf import settings
 
+
+User= settings.AUTH_USER_MODEL
 
 class Question(models.Model):
     """
     Class is represent a Creating Question for questionnaire module.
     """
     
-    qgroup = models.ForeignKey(Group, verbose_name=_('Group'), db_column='group_id', null=False, blank=False,on_delete=models.CASCADE)
+    qgroup = models.ForeignKey(QGroup, verbose_name=_('QGroup'), db_column='group_id', null=False, blank=False,on_delete=models.CASCADE, help_text=_("Select the group of question."))
     """
     This field represents group of an question.
     """
  
-    code = models.CharField(_('Code'), max_length=48, null=False, blank=False, db_column='code')
+    code = models.CharField(_('Code'), max_length=48, null=False, blank=False, db_column='code', unique = True, help_text=_("Enter Code."))
     """
     This field represents code of an question.
     """
     
-    answer_type = models.CharField(_('Answer Type'), max_length=4, null=False, db_column='answer_type', blank=False, choices=settings.QUESTION_ANSWER_TYPES, default='TXT')
+    answer_type = models.CharField(_('Answer Type'), max_length=4, null=False, db_column='answer_type', blank=False, choices=settings.QUESTION_ANSWER_TYPES, default='TXT', help_text=_("Select the answer type of question."))
     """
     This field represents answer type of an question.
     """
@@ -33,13 +36,26 @@ class Question(models.Model):
     """
     This field represents created time of an question.
     """
-    
-    status = models.CharField(_("Status"), choices=settings.QUESTION_STATUS_CHOICES, default="A", max_length=1, db_column="status", help_text=_("Select the status."))    
+
+    primary_language = models.ForeignKey(Language, verbose_name=_('Primary Language'), db_column='primary_language_id', null=False, blank=False,on_delete=models.CASCADE,help_text=_("Select the primary language of question."))
     """
-    This field represents status of an question.
+    This field represents primary language id. The question is expected to be supplied first in this language.
     """
     
-    plan_id = models.ManyToManyRel(Plan, to="", through='SurveyPlanQuestionMap')
+    status = models.CharField(_("Status"), choices=settings.STATUS_CHOICES, default="A", max_length=1, db_column="status", help_text=_("Select the status."))    
+    """
+    This field represents status of a question.
+    """
+    
+    survey_plans = models.ManyToManyField(SurveyPlan, through='SurveyPlanQuestionMap',related_name='surveyplans',help_text=_("Select Survey Plans."))
+    """
+    This field represents Many to Many relationship with Survey plans.
+    """
+
+    created_by = models.ForeignKey(User,verbose_name=_('Created By'), null= False, on_delete=models.CASCADE)
+    """
+    This field represents user who created Question.
+    """
 
     def __str__(self):
         """
@@ -58,19 +74,18 @@ class Question(models.Model):
         Meta class for Question.
         """
         db_table = 'qm_questions'
-    
         
 
 class QuestionContents(models.Model):
     
-    question_id = models.ForeignKey(Question, verbose_name=_('Question'), db_column='question_id', null=False, blank=False,on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, verbose_name=_('Question'), db_column='question_id', null=False, blank=False,on_delete=models.CASCADE)
     """
     This field represents group of an question.
     """
     
-    language_id = models.ForeignKey(Language, verbose_name=_('Language'), db_column='language_id', null=False, blank=False,on_delete=models.CASCADE)
+    language = models.ForeignKey(Language, verbose_name=_('Language'), db_column='language_id', null=False, blank=False,on_delete=models.CASCADE)
     """
-    This field represents group of an languages.
+    This field represents group of a languages.
     """
     
     included_at = models.DateTimeField(_('Included At'), null=False, auto_now_add=True, db_column='included_at')
@@ -82,7 +97,20 @@ class QuestionContents(models.Model):
     """
     This field represents included time of an question contents.
     """
-    
+
+    created_by = models.ForeignKey(User,verbose_name=_('Created By'), null= False, on_delete=models.CASCADE)
+    """
+    This field represents user who created Question Content.
+    """
+
+    created_at = models.DateTimeField(_('Created At'), null=False, auto_now_add=True, db_column='created_at')
+    """
+    This field represents created time of an Question's Content.
+    """
+    status = models.CharField(_("Status"), choices=settings.STATUS_CHOICES, default="A", null=False, max_length=1, db_column="status", help_text=_("Select the status."))    
+    """
+    This field represents status of an question.
+    """ 
     def __str__(self):
         return self.content
     
@@ -103,16 +131,31 @@ class QuestionOptions(models.Model):
     This field represents code of an question.
     """
     
-    question_id = models.ForeignKey(Question, verbose_name=_('Question'), db_column='question_id', null=False, blank=False,on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, verbose_name=_('Question'), db_column='question_id', null=False, blank=False,on_delete=models.CASCADE)
     """
-    This field represents group of an question.
+    This field represents group of a question.
     """
 
     included_at = models.DateTimeField(_('Included At'), null=False, auto_now_add=True, db_column='included_at')
     """
     This field represents included time of an question options.
     """
-    
+
+    ordering = models.IntegerField(_('Ordering'), null=False, db_column='ordering')
+    """
+    This field represents order of question options.
+    """
+
+    deleted_at = models.DateTimeField(_('Deleted At'), null=True, db_column='deleted_at')
+    """
+    This field represents time on which question option was deleted.
+    """
+
+    status = models.CharField(_("Status"), choices=settings.STATUS_CHOICES, default="A", max_length=1, db_column="status", help_text=_("Select the status."))  
+    """
+    This field represents status of Question Option 
+    """
+
     def __str__(self):
         return self.code
     
@@ -125,10 +168,14 @@ class QuestionOptions(models.Model):
 
 class OptionContents(models.Model):
     """
-    Class is represent question contents.
+    Class is represent option contents.
     """
-    
-    language_id = models.ForeignKey(Language, verbose_name=_('Language'), db_column='language_id', null=False, blank=False,on_delete=models.CASCADE)
+
+    option = models.ForeignKey(QuestionOptions, verbose_name=_('Option'), db_column='option_id', null=False, blank=False,on_delete=models.CASCADE)
+    """
+
+    """
+    language = models.ForeignKey(Language, verbose_name=_('Language'), db_column='language_id', null=False, blank=False,on_delete=models.CASCADE)
     """
     This field represents group of an languages.
     """
@@ -137,12 +184,23 @@ class OptionContents(models.Model):
     """
     This field represents included time of an question options.
     """
-    
     included_at = models.DateTimeField(_('Included At'), null=False, auto_now_add=True, db_column='included_at')
     """
     This field represents included time of an question options.
     """
-    
+    created_at = models.DateTimeField(_('Created At'), null=False, auto_now_add=True, db_column='created_at')
+    """
+    This field represents created time of an Question's Content.
+    """
+    deleted_at = models.DateTimeField(_('Deleted At'), null=True, db_column='deleted_at')
+    """
+    This field represents time on which option content was deleted.
+    """
+
+    status = models.CharField(_("Status"), choices=settings.STATUS_CHOICES, default="A", max_length=1, db_column="status", help_text=_("Select the status."))  
+    """
+    This field represents status of option content
+    """
     def __str__(self):
         return self.code
     
@@ -158,7 +216,7 @@ class SurveyPlanQuestionMap(models.Model):
     Class is represent mapping of Plan and question from questionnaire.
     """
     
-    plan = models.ForeignKey(Plan, verbose_name=_('Plan'), db_column='plan_id', null=False, blank=False, on_delete=models.CASCADE)
+    surveyplan = models.ForeignKey(SurveyPlan, verbose_name=_('Survey Plan'), db_column='surveyplan_id', null=False, blank=False, on_delete=models.CASCADE)
     """
     This field represents Plan of an question.
     """
@@ -167,7 +225,7 @@ class SurveyPlanQuestionMap(models.Model):
     """
     This field represents Question.
     """
-
+    
     class Meta:
         """
         Meta class for PlanQuestionMap.
