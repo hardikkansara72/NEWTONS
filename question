@@ -232,4 +232,3 @@ class SurveyPlanQuestionMap(models.Model):
         """
         # db_table = 'qm_plan_question_map'
         db_table = 'qm_surveyplan_question_map'
-
