@@ -1,0 +1,30 @@
+def group_question_view(request,groups_id):
+    template_name = "pages/start_survey.html"
+    group = QGroup.objects.get(id=groups_id)
+    questions = Question.objects.filter(qgroup=group)
+    groups = QGroup.objects.all()
+    question_data = group.question_set.all()
+    questions_content = QuestionContents.objects.filter(question__in = questions)
+    paginator = Paginator(questions_content, 5)
+    answer = SurveyQuestionAnswers.objects.filter(question__in = questions)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    surveyQuestionAnswerForm = SurveyQuestionAnswerForm()
+    if request.method == "GET":
+        context = {
+            'group':group,
+            'questions':questions,
+            # 'questions_content': questions_content
+            'data': questions_content,
+            'groups_data': groups,
+            'qdata':question_data,
+            'answer':answer,
+            'answerform': surveyQuestionAnswerForm,
+            "page_obj": page_obj,
+        }
+        return render(request,"pages/start_survey.html",context)   
+    if request.method == "POST":
+        survey_id = QuestionContents.objects.filter(question__in = questions)
+        return redirect("index")
+        
+    return render(request,"pages/start_survey.html")
