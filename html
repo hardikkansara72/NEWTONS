@@ -1,60 +1,161 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Survey Page</title>
-    
-    <!-- Soft UI Theme CSS (replace with the actual path to the theme CSS file) -->
-    <link rel="stylesheet" href="/path/to/soft-ui-theme.css">
+{% extends 'layouts/base.html' %}
+{% load i18n admin_urls static admin_list %}
+{% load static %}
 
-    <!-- Add your custom styles here -->
-    <style>
-        /* Add your custom styles here */
-    </style>
-</head>
-<body>
+{% block content %}
+<style>
+    .hidden{
+        display: none;
+    }
+</style>
 
-    <div class="container">
-        <div class="card">
-            <div class="card-header">
-                <h2>Survey Title</h2>
-                <p>Survey Description</p>
+
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h2>Survey for user</h2>
+        </div>
+        <div class="card-body">
+            <div class="row justify-space-between py-2">
+                <div class="col-lg-6">
+                    <h4>Overall progress</h4>
+                    <div class="progress mb-3">
+                        <div class="progress-bar bg-gradient-primary" role="progressbar" style="width: 40%"
+                            aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <form method="post" action="{% url 'submit_survey' %}">
-                    {% csrf_token %}
-                    
-                    <!-- Add fields for survey details (if needed) -->
-
-                    {% for question in survey.questions.all %}
-                        <div class="mb-3">
-                            <label for="question_{{ question.id }}">{{ question.text }}</label>
-
-                            {% if question.type == 'text' %}
-                                <textarea id="question_{{ question.id }}" name="answer_{{ question.id }}" class="form-control" required></textarea>
-                            {% elif question.type == 'choice' %}
-                                <select id="question_{{ question.id }}" name="answer_{{ question.id }}" class="form-control" required>
-                                    {% for option in question.options.all %}
-                                        <option value="{{ option.id }}">{{ option.text }}</option>
-                                    {% endfor %}
-                                </select>
-                            {% endif %}
+            <div class="row">
+                <div class="col-sm-12 col-md-6 col-lg-4">
+                    <div class="card">
+                        <div class="card-header bg-gradient-secondary text-white font-weight-bold font-weight-bolder">
+                            Question Groups
                         </div>
-                    {% endfor %}
-
-                    <button type="submit" class="btn btn-primary">Submit Survey</button>
-                </form>
+                        <ul class="list-group list-group-flush">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="list-group" id="list-tab" role="tablist">
+                                        {% for group in groups_data %}
+                                        <div class="list-group-item list-group-item-action" id="list-home-list"
+                                            data-bs-toggle="list" role="tab" aria-controls="list-home"><a
+                                                href="{% url 'group_question_view' group.id %}">{{group.name}}</a></div>
+                                        <!-- <a class="list-group-item list-group-item-action" id="list-profile-list" data-bs-toggle="list" href="#list-profile" role="tab" aria-controls="list-profile">Java</a>
+                                        <a class="list-group-item list-group-item-action" id="list-messages-list" data-bs-toggle="list" href="#list-messages" role="tab" aria-controls="list-messages">.Net</a>
+                                        <a class="list-group-item list-group-item-action" id="list-settings-list" data-bs-toggle="list" href="#list-settings" role="tab" aria-controls="list-settings">Linux</a> -->
+                                        {% endfor %}
+                                        {% for group in groups %}
+                                        <div class="list-group-item list-group-item-action" id="list-home-list"
+                                            data-bs-toggle="list" role="tab" aria-controls="list-home"><a
+                                                href="{% url 'group_question_view' group.id %}">{{group.name}}</a></div>
+                                        <!-- <a class="list-group-item list-group-item-action" id="list-profile-list" data-bs-toggle="list" href="#list-profile" role="tab" aria-controls="list-profile">Java</a>
+                                        <a class="list-group-item list-group-item-action" id="list-messages-list" data-bs-toggle="list" href="#list-messages" role="tab" aria-controls="list-messages">.Net</a>
+                                        <a class="list-group-item list-group-item-action" id="list-settings-list" data-bs-toggle="list" href="#list-settings" role="tab" aria-controls="list-settings">Linux</a> -->
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-sm-12 col-md-6 col-lg-8">
+                    <div class="card">
+                        <div class="question-container" id="questions{{ group.id }}">
+                            <div class="tab-content" id="nav-tabContent">
+                                <div class="card-header bg bg-gradient-secondary text-white font-weight-bold">
+                                    Question
+                                </div>
+                                <ul class="list-group p-3 list-group-flush">
+                                    {% for question in data %}
+                                    <form action="" method="post">
+                                        {% csrf_token %}
+                                    <div class="question">
+                                        <li class="list-group-item">{{ question.content }}</li>
+                                        <li class="list-group-item"><textarea rows=3 class="form-control" placeholder="Enter your answer" name="answer_{{ question.id }}"></textarea></li>
+                                        <div class="list-group-item d-flex">
+                                            <div class="mt-2"><b>Last answered by : </b>{{question.created_by}} <b> at </b>
+                                                {{question.created_at}}</div>
+                                            <div class="mb-3"><a name="" id="" style="margin-left: 100px;"
+                                                    class="btn bg-gradient-info align-self-end" href="#"
+                                                    role="button" onclick="showNext()">Next</a>
+                                            </div>
+                                            <div class="mb-3 justify-content-between">
+                                                <input type="submit" class="btn bg-gradient-info align-self-auto" value="Save">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="my-3"></div>
+                                    </form>
+                                {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="row mt-5 ">
+                    <div class="col-4">
+                        <div>
+                            <b>Submit after only completing all the sections.</b>
+                        </div>
+                        <div class="ms-4">
+                            <a name="" id="" class="btn bg-gradient-primary me-2" href=""
+                                role="button">Final Submission</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+</div>
+<br>
 
-    <!-- Soft UI Theme JS (replace with the actual path to the theme JS file) -->
-    <script src="/path/to/soft-ui-theme.js"></script>
 
-    <!-- Add your custom scripts here -->
-    <script>
-        // Add your custom scripts here
-    </script>
-</body>
-</html>
+<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+<!-- <script>
+    $(document).ready(function(){
+        $(".question").not(":first").hide();
+        $("#nextButton").click(function(){
+            var currentQuestion = $(".question:visible");
+            currentQuestion.hide();
+            var nextQuestoin = currentQuestion.next(".question");
+            if(nextQuestoin.length === 0){
+                nextQuestoin = $(".question:first");
+            }
+            nextQuestoin.show();
+        })
+    })
+</script> -->
+{% comment %} <script>
+    var visibleDiv = 0;
+    function showDiv(){
+        $(".question").hide();
+        $(".question:eq("+ visibleDiv + ")").show();
+    }
+    showDiv();
+
+    function showNext(){
+        if(visibleDiv  == $(".question").length-1){
+            visibleDiv = 0;
+        }
+        else{
+            visibleDiv++;
+        }
+        showDiv();
+    }
+
+    function showPrev(){
+        if(visibleDiv  == 0){
+            visibleDiv = $(".question").length-1;
+            confirm("Are you Sure?");
+        }
+        else{
+            visibleDiv--;
+        }
+        showDiv();
+    }
+    const myModal = new bootstrap.Modal('#questions', {
+        keyboard: false
+      })
+</script> {% endcomment %}
+{% endblock %}
