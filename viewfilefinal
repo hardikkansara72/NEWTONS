@@ -110,11 +110,11 @@ class SurveyView(View):
 def group_question_view(request,groups_id):
     template_name = "pages/question.html"
     group = QGroup.objects.get(id=groups_id)
-    questions = Question.objects.filter(qgroup=group)
+    questions = Question.objects.filter(qgroup=group, status='A')
     groups = QGroup.objects.filter(status='A')
     groups = QGroup.objects.filter(id__in = questions.values_list('qgroup',flat=True))
-    question_data = group.question_set.all()
-    questions_content = QuestionContents.objects.filter(question__in = question_data)
+    question_data = group.question_set.filter(status='A')
+    questions_content = QuestionContents.objects.filter(question__in = question_data, status='A')
     question_options = QuestionOptions.objects.filter(question__in = questions)
     question_option_contents = OptionContents.objects.filter(option__in = question_options)
     
@@ -167,10 +167,11 @@ def group_question_view(request,groups_id):
             'question_page':question_page,
             'overall_completion_percentage':overall_completion_percentage,
             'group_completion_data':group_completion_data,
+            'question_option_contents':question_option_contents,
         }
         return render(request,"pages/start_survey.html",context)   
     if request.method == "POST":
         survey_id = QuestionContents.objects.filter(question__in = questions)
         return redirect("index")
-    return render(request,"pages/start_survey.html")
+    return render(request,"pages/start_survey.html")   
 
