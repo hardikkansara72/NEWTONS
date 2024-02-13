@@ -115,20 +115,8 @@ def group_question_view(request,groups_id):
     groups = QGroup.objects.filter(id__in = questions.values_list('qgroup',flat=True))
     question_data = group.question_set.all()
     questions_content = QuestionContents.objects.filter(question__in = question_data)
-    
-    
-    question_content_dict = {}
-    for question in Question.objects.filter(status='A'):
-        question_content_dict[question.code] = QuestionContents.objects.filter(question=question).values_list('content')
-    
-    quesiton_option_dict = {}
-    for question in Question.objects.filter(status='A'):
-        quesiton_option_dict[question.code] = QuestionOptions.objects.filter(question=question)
-    
-    option_content_dict = {}
-    for option in QuestionOptions.objects.all():
-        option_content_dict[option.code] = OptionContents.objects.filter(option=option)
-        
+    question_options = QuestionOptions.objects.filter(question__in = questions)
+    question_option_contents = OptionContents.objects.filter(option__in = question_options)
     
     #Overall Progressbar
     total_questions = 0
@@ -184,5 +172,5 @@ def group_question_view(request,groups_id):
     if request.method == "POST":
         survey_id = QuestionContents.objects.filter(question__in = questions)
         return redirect("index")
-    return render(request,"pages/start_survey.html")   
+    return render(request,"pages/start_survey.html")
 
