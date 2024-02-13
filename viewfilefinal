@@ -1,0 +1,188 @@
+class SurveyView(View):
+    template_name = "pages/start_survey.html"
+    
+    def get(self, request, surveyplan_id, *args, **kwargs):
+        
+        #For Get survey and surveyplan based groups
+        surveyplan = get_object_or_404(SurveyPlan, id=surveyplan_id)
+        survey_plan_id =  surveyplan.id
+        questions = Question.objects.filter(survey_plans__id=survey_plan_id)
+        group = QGroup.objects.filter(id__in = questions.values_list('qgroup',flat=True))
+        
+        #For get survey question based on qgroups
+        question_data = []
+        for qgroup in group:
+            question_contents = QuestionContents.objects.filter(question__qgroup=qgroup)
+            question_data.append(question_contents)
+            
+            
+        # For get group based overall progressbar
+        answers_per_question = {}
+        group_completion_data = []
+        total_answers = 0
+        total_questions = 0
+        for groups_items in group:
+            group_questions = Question.objects.filter(qgroup=groups_items)
+            total_questions += group_questions.count()
+            total_answers += SurveyQuestionAnswers.objects.filter(question__in = group_questions).count()
+            
+        # For get overall progressbar
+        overall_completion_percentage = 0
+        if total_questions > 0:
+            overall_completion_percentage = (total_answers / total_questions) *100
+        
+        
+        #For get all question
+        question_contents = QuestionContents.objects.filter(question__in=questions).select_related('question')
+        question_content_map = {content.question_id:content for content in question_contents}
+        
+        #For get qroup/survey_plan mapped based question
+        list_of_question = []
+        for question in questions:
+             question_content = question_content_map.get(question.id)
+             question.question_content = question_content.content if question_content else "no recode"
+             list_of_question.append(question.question_content)
+
+       
+        #Overall Progressbar
+        total_questions = 0
+        total_answers = 0
+        for groups_items in group:
+            group_questions = Question.objects.filter(qgroup=groups_items)
+            total_questions += group_questions.count()
+            total_answers += SurveyQuestionAnswers.objects.filter(question__in = group_questions).count()
+
+        overall_completion_percentage = 0
+        if total_questions > 0:
+            overall_completion_percentage = (total_answers / total_questions) *100
+        
+        
+        #Progressbar with group
+        group_completion_data = []
+        for group_item in group:
+                total_questions = Question.objects.filter(qgroup=group_item).count()
+                total_answers = SurveyQuestionAnswers.objects.filter(question__qgroup=group_item).count()
+
+                completion_percentage = 0
+                if total_questions > 0:
+                    completion_percentage=(total_answers/total_questions)*100
+                
+                group_completion_data.append({
+                    'group':group,
+                    'completion_percentage':completion_percentage,
+                    'group_completion_data':group_completion_data,
+                })
+            
+        # Pagination for question.
+        paginator = Paginator(list_of_question, settings.QUESTION_PER_PAGE)
+        page_number = request.GET.get("page", 1)
+        try:
+            question_page = paginator.page(page_number)
+        except PageNotAnInteger:
+            question_page = paginator.page(1)
+        except EmptyPage:
+            question_page = paginator.page(paginator.num_pages)
+        
+        return render(request, self.template_name, {
+            'surveyplan':surveyplan,
+            'group':group,
+            'question_data':question_data,
+            'question_page':question_page,
+            'overall_completion_percentage':overall_completion_percentage,
+            
+            })
+    
+    def post(self, request, *args, **kwargs):
+        survey = Survey.objects.get(pk=kwargs['survey_id'])
+        form = SurveyForm(request.POST, survey=survey)
+        
+        if form.is_valid():
+            for question in survey.questions.all():
+                answer_text = form.cleaned_data[f'answer_{question.id}']
+                answerd_by = request.user
+                
+                SurveyQuestionAnswers.objects.create(survey=survey, question=question, answer=answer_text, chosenanswered_by=answerd_by)
+                messages.success(request, "Survey Submited Successfully.")
+                return redirect("index")
+        return render(request, self.template_name, {'form':form, 'survey':survey})
+
+
+def group_question_view(request,groups_id):
+    template_name = "pages/question.html"
+    group = QGroup.objects.get(id=groups_id)
+    questions = Question.objects.filter(qgroup=group)
+    groups = QGroup.objects.filter(status='A')
+    groups = QGroup.objects.filter(id__in = questions.values_list('qgroup',flat=True))
+    question_data = group.question_set.all()
+    questions_content = QuestionContents.objects.filter(question__in = question_data)
+    
+    
+    question_content_dict = {}
+    for question in Question.objects.filter(status='A'):
+        question_content_dict[question.code] = QuestionContents.objects.filter(question=question).values_list('content')
+    
+    quesiton_option_dict = {}
+    for question in Question.objects.filter(status='A'):
+        quesiton_option_dict[question.code] = QuestionOptions.objects.filter(question=question)
+    
+    option_content_dict = {}
+    for option in QuestionOptions.objects.all():
+        option_content_dict[option.code] = OptionContents.objects.filter(option=option)
+        
+    
+    #Overall Progressbar
+    total_questions = 0
+    total_answers = 0
+    for groups_items in groups:
+        group_questions = Question.objects.filter(qgroup=groups_items)
+        total_questions += group_questions.count()
+        total_answers += SurveyQuestionAnswers.objects.filter(question__in = group_questions).count()
+
+    overall_completion_percentage = 0
+    if total_questions > 0:
+        overall_completion_percentage = (total_answers / total_questions) *100
+    
+    #Progressbar with group
+    group_completion_data = []
+    for group_item in groups:
+            total_questions = Question.objects.filter(qgroup=group_item).count()
+            total_answers = SurveyQuestionAnswers.objects.filter(question__qgroup=group_item).count()
+
+            completion_percentage = 0
+            if total_questions > 0:
+                completion_percentage=(total_answers/total_questions)*100
+            
+            group_completion_data.append({
+                'group':groups,
+                'completion_percentage':completion_percentage,
+                'group_completion_data':group_completion_data,
+            })
+    
+     # Pagination for question.
+    paginator = Paginator(questions_content, settings.QUESTION_PER_PAGE)
+    page_number = request.GET.get("page", 1)
+    try:
+        question_page = paginator.page(page_number)
+    except PageNotAnInteger:
+        question_page = paginator.page(1)
+    except EmptyPage:
+        question_page = paginator.page(paginator.num_pages)
+
+    if request.method == "GET":
+        context = {
+            'groups_all':group,
+            'questions':questions,
+            # 'questions_content': questions_content
+            'data': questions_content,
+            'groups_data': groups,
+            'qdata':question_data,
+            'question_page':question_page,
+            'overall_completion_percentage':overall_completion_percentage,
+            'group_completion_data':group_completion_data,
+        }
+        return render(request,"pages/start_survey.html",context)   
+    if request.method == "POST":
+        survey_id = QuestionContents.objects.filter(question__in = questions)
+        return redirect("index")
+    return render(request,"pages/start_survey.html")   
+
