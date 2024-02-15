@@ -1,0 +1,25 @@
+<script>
+function submitForm() {
+    // Get form data
+    var formData = new FormData(document.getElementById('myForm'));
+
+    // Send AJAX request
+    fetch('/your-view-url/', {  // Update with the correct URL
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': '{{ csrf_token }}'  // Include CSRF token for security
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Handle the response, e.g., display a success message
+        console.log(data.message);
+        // You can update the UI here if needed
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+</script>
