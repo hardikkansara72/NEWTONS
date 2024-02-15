@@ -1,59 +1,111 @@
 {% block content %}
-  <div class="container mt-4">
-    <h2>Survey Review - Group-Based Questions</h2>
-
-    <div class="mb-4">
-      <h3>Overall Completion Percentage: {{ overall_completion_percentage }}%</h3>
-    </div>
-
-    {% for group_data in group_completion_data %}
-      <div class="card mb-4">
-        <div class="card-header">
-          <h4>Group: {{ group_data.group.name }}</h4>
-        </div>
-        <div class="card-body">
-          <p>Group Completion Percentage: {{ group_data.completion_percentage }}%</p>
-
-          {% for question in group_data.group.questions.all %}
-            <div class="card mb-2">
-              <div class="card-header">
-                <h5>Question: {{ question.question_content }}</h5>
-              </div>
-              <div class="card-body">
-                <!-- Display additional question details if needed -->
-                <p>Question Type: {{ question.question_type }}</p>
-                <!-- Add more details as needed -->
-
-                <!-- Display answers for the question -->
-                <p>Answers: 
-                  {% for answer in question.answers.all %}
-                    {{ answer.text }}{% if not forloop.last %}, {% endif %}
-                  {% endfor %}
-                </p>
-              </div>
+<div class="container">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12">
+                <div clas="card mb-3">
+                    <div class="question-container" id="questions{{ group.id }}">
+                        <div class="tab-content" id="nav-tabContent">
+                            {% for quesion in question_page %}
+                            <form id="question_form" action="" method="post">
+                            {% csrf_token %}
+                            <div class="card-header bg bg-gradient-secondary text-white font-weight-bold">{{quesion.language.name}}</div>
+                                <div class="list-group p-3 list-group-flush">
+                                    <li class="list-group-item" id="question_id">{{quesion.content}}</li>
+                                    <li class="list-group-item">
+                                    {% if quesion.question.answer_type == "SIN" %}
+                                        {% if quesion.question.questionoptions_set.exists %}
+                                            {% for option in quesion.question.questionoptions_set.all %}
+                                            <div class="form-check form-check-inline">
+                                                {% for option_data in option.optioncontents_set.all %}
+                                                    <input class="form-check-input" type="radio" name="ans_single" id="inlineRadio1" value="{{option_data.content}}">
+                                                    <label class="form-check-label" for="inlineRadio1">{{option_data.content}}</label>
+                                                {% endfor %}
+                                            </div>
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endif %}
+                                    {% if quesion.question.answer_type == "MUL" %}
+                                        {% if quesion.question.questionoptions_set.exists %}
+                                            {% for option in quesion.question.questionoptions_set.all %}
+                                            <div class="form-check">
+                                                {% for option_data in option.optioncontents_set.all %}
+                                                    <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+                                                    <label class="form-check-label" for="flexCheckDefault">{{option_data.content}}</label>
+                                                {% endfor %}
+                                            </div>
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endif %}
+                                    {% if quesion.question.answer_type == "TXT" %}
+                                        <textarea class="form-control" id="exampleFormControlTextarea1" name="txt_answer" rows="3"></textarea>
+                                    {% endif %}
+                                    {% if quesion.question.answer_type == "INT" %}
+                                        <input type="number" name="ans_int" id="{{quesion.question.id}}" value="">
+                                    {% endif %}
+                                    {% if quesion.question.answer_type == "DAT" %}
+                                    <input type="date" name="ans_date" min="1996-01-01" class="form-control">
+                                    {% endif %}
+                                    </li>
+                                    <li class="list-group-item">Last answer by:</li>
+                                    <div></div>
+                                </div>
+                                <div class="grid">
+                                    <li class="list-group-item"><input type="reset" value="Reset" class="btn btn-danger"></li>
+                                    <li class="list-group-item"><input type="submit" value="Save" class="btn btn-success"></li>
+                                </div>
+                            </form>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <nav aria-label="...">
+                    <ul class="pagination justify-content-end">
+                        <li class="page-link"><span class="current">Page {{ question_page.number }} of {{ question_page.paginator.num_pages }}.</span></li>
+                    {% if question_page.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page=1">first</a></li>
+                        <li class="page-item">
+                        <a class="page-link" href="?page={{ question_page.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+                        <li class="page-item active"><a class="page-link" href="?page=1">{{ question_page.number }}</a></li>
+                    {% if question_page.has_next %}
+                        <li class="page-item">
+                        <a class="page-link" href="?page={{ question_page.next_page_number }}">Next</a>
+                        </li>
+                        <li class="page-item">
+                        <a href="?page={{ question_page.paginator.num_pages }}" class="page-link">last &raquo;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+                {% if question_page.has_previous %}
+                    <div class="row mt-5">
+                        <div class="col-4">
+                            <div>
+                                <b>Submit after only completing all the sections.</b>
+                            </div>
+                            <div class="ms-4">
+                                <a name="" id="" class="btn bg-gradient-primary me-2" href="" role="button">Final Submission</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                    </nav>
             </div>
-          {% endfor %}
         </div>
-      </div>
-    {% endfor %}
-
-    <!-- Pagination -->
-    <div class="pagination justify-content-center">
-      <span class="step-links">
-        {% if question_page.has_previous %}
-          <a href="?page=1">&laquo; first</a>
-          <a href="?page={{ question_page.previous_page_number }}">previous</a>
-        {% endif %}
-
-        <span class="current">
-          Page {{ question_page.number }} of {{ question_page.paginator.num_pages }}.
-        </span>
-
-        {% if question_page.has_next %}
-          <a href="?page={{ question_page.next_page_number }}">next</a>
-          <a href="?page={{ question_page.paginator.num_pages }}">last &raquo;</a>
-        {% endif %}
-      </span>
+        <div>
+            {% comment %} <div class="row mt-5 ">
+                <div class="col-4">
+                    <div>
+                        <b>Submit after only completing all the sections.</b>
+                    </div>
+                    <div class="ms-4">
+                        <a name="" id="" class="btn bg-gradient-primary me-2" href="" role="button">Final Submission</a>
+                    </div>
+                </div>
+            </div> {% endcomment %}
+        </div>
     </div>
-  </div>
-{% endblock %}
+</div>
+
+{% endblock content %}
