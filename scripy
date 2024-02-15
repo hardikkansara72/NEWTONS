@@ -1,25 +1,28 @@
 <script>
-function submitForm() {
-    // Get form data
-    var formData = new FormData(document.getElementById('myForm'));
+        $(document).ready(function() {
+            $('#question_form').submit(function(e) {
+                e.preventDefault(); // Prevent the default form submission
 
-    // Send AJAX request
-    fetch('/your-view-url/', {  // Update with the correct URL
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRFToken': '{{ csrf_token }}'  // Include CSRF token for security
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Handle the response, e.g., display a success message
-        console.log(data.message);
-        // You can update the UI here if needed
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    });
-}
-</script>
+                // Serialize form data
+                var formData = $(this).serialize();
+
+                // Submit the form using AJAX
+                $.ajax({
+                    type: 'POST',
+                    url: '/submit_answer/',  // Update with your actual URL
+                    data: formData,
+                    success: function(response) {
+                        // Handle the success response, if needed
+                        console.log('Form submitted successfully:', response.message);
+
+                        // If you want to update the page after submission, you can reload it
+                        // window.location.reload();
+                    },
+                    error: function(error) {
+                        // Handle the error response, if needed
+                        console.error('Error submitting form', error.responseJSON.error);
+                    }
+                });
+            });
+        });
+    </script>
