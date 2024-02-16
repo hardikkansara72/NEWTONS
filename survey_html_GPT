@@ -50,7 +50,7 @@
                                 </div>
                                 <div class="grid">
                                     <li class="list-group-item"><input type="reset" value="Reset" class="btn btn-danger"></li>
-                                    <li class="list-group-item"><input type="submit" value="Save" class="btn btn-success"></li>
+                                    <li class="list-group-item"><button id="saveBtn" class="btn btn-success">Save</button></li>
                                 </div>
                         </div>
                         {% endfor %}
