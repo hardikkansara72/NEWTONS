@@ -6,9 +6,7 @@
                 <div clas="card mb-3">
                     <div class="question-container" id="questions{{ group.id }}">
                         <div class="tab-content" id="nav-tabContent">
-                            {% for quesion in question_page %}
-                            <form id="question_form" action="" method="post">
-                            {% csrf_token %}
+                            {% for quesion in question_page %}                            
                             <div class="card-header bg bg-gradient-secondary text-white font-weight-bold">{{quesion.language.name}}</div>
                                 <div class="list-group p-3 list-group-flush">
                                     <li class="list-group-item" id="question_id">{{quesion.content}}</li>
@@ -54,7 +52,6 @@
                                     <li class="list-group-item"><input type="reset" value="Reset" class="btn btn-danger"></li>
                                     <li class="list-group-item"><input type="submit" value="Save" class="btn btn-success"></li>
                                 </div>
-                            </form>
                         </div>
                         {% endfor %}
                     </div>
