@@ -1,0 +1,42 @@
+<script>
+    $(document).ready(function () {
+        // Add a click event to your Save button or use a different trigger
+        $('.btn-success').click(function () {
+            // Loop through each question and send the response via AJAX
+            $('.question-container .list-group-item').each(function () {
+                var question_id = $(this).find('#question_id').text();
+                var answer = '';  // You need to fetch the answer based on the input type
+
+                // Depending on the input type, fetch the answer value
+                if ($(this).find('input[type="radio"]').length > 0) {
+                    answer = $(this).find('input[type="radio"]:checked').val();
+                } else if ($(this).find('input[type="checkbox"]').length > 0) {
+                    // Handle checkbox input type
+                } else if ($(this).find('textarea').length > 0) {
+                    answer = $(this).find('textarea').val();
+                } else if ($(this).find('input[type="number"]').length > 0) {
+                    answer = $(this).find('input[type="number"]').val();
+                } else if ($(this).find('input[type="date"]').length > 0) {
+                    answer = $(this).find('input[type="date"]').val();
+                }
+
+                // Send the AJAX request to save the response
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url "save_survey" %}',  // Update with your URL pattern name
+                    data: {
+                        'question_id': question_id,
+                        'answer': answer,
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    success: function (data) {
+                        // Handle success response if needed
+                    },
+                    error: function (data) {
+                        // Handle error response if needed
+                    }
+                });
+            });
+        });
+    });
+</script>
