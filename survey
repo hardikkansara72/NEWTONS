@@ -13,35 +13,11 @@ from django.utils.translation import gettext_lazy as _
 from django.conf import settings
  
 class Survey(models.Model):                       
-    """ 
-    Class represents an Survey Plans.
-    """
-
     surveyplan = models.ForeignKey(SurveyPlan, verbose_name=_('Survey Plan'), db_column='surveyplan_id', null=False, blank=False, on_delete=models.CASCADE)
-    """
-    This field represents Surveyplan of an survey.
-    """   
-    
-    authuser = models.ForeignKey(AuthUser, verbose_name=_('Authuser'), db_column='authuser_id', null=False, blank=False, on_delete=models.CASCADE)
-    """
-    This field represents Authuser of an survey.
-    The user starting the survey. Other authorized users too can provide answers to the questions raised in the survey.
-    """   
-    
+    authuser = models.ForeignKey(AuthUser, verbose_name=_('Authuser'), db_column='authuser_id', null=False, blank=False, on_delete=models.CASCADE)   
     started_at = models.DateTimeField(_("Started At"), db_column='started_at', auto_now_add=True )
-    """
-    This field represent the start time of survey.
-    """
-    
     finished_at = models.DateTimeField(_("Finished At"), db_column='finished_at', null=True, blank=True)
-    """
-    This field represent the finished time of survey.
-    """
-    
-    status = models.CharField(_("Status"), choices=settings.SURVEY_STATUS_CHOICES, default="A", max_length=1, db_column="status", help_text=_("Select the status."))    
-    """
-    This field represents status of an survey.
-    """
+    status = models.CharField(_("Status"), choices=settings.SURVEY_STATUS_CHOICES, default="A", max_length=1, db_column="status", help_text=_("Select the status."))       
     
     class Meta:
         """
