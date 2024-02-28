@@ -26,30 +26,11 @@ class Survey(models.Model):
         db_table = 'qm_survey'
 
 class SurveyQuestionOptions(models.Model):
-    """
-    This class represent Survey Question Options.
-    """
-    
     survey = models.ForeignKey(Survey, verbose_name=_('Survey'), db_column='survey_id', null=False, blank=False, on_delete=models.CASCADE)
-    """
-    This field represents Survey of an SurveyQuestionOptions.
-    """
-    
     question = models.ForeignKey(Question, verbose_name=_('Question'), db_column='question_id', null=False, blank=False, on_delete=models.CASCADE)
-    """
-    This field represents Survey of an SurveyQuestionOptions.
-    """
-    
     chosen_by = models.ForeignKey(AuthUser, verbose_name=_('Chosen by'), db_column='chosen_by_id', null=False, blank=False, on_delete=models.CASCADE)
-    """
-    This field represents Survey of an SurveyQuestionOptions.
-    """
-    
     mapped_at = models.DateTimeField(_('Mapped At'), null=False, auto_now_add=True, db_column='mapped_at')
-    """
-    This field represents a creation time of an Survey Question Options.
-    """
-    
+
     class Meta:
         """
         Meta class for SurveyQuestionOptions.
@@ -58,34 +39,11 @@ class SurveyQuestionOptions(models.Model):
 
 
 class SurveyQuestionAnswers(models.Model):
-    """
-    This class represent the survey question answers fields.
-    """
-    
     survey = models.ForeignKey(Survey, verbose_name=_('Survey'), db_column='survey_id', null=False, blank=False, on_delete=models.CASCADE)
-    """
-    This field represents Survey of an SurveyQuestionOptions.
-    """
-    
     question = models.ForeignKey(Question, verbose_name=_('Question'), db_column='question_id', null=False, blank=False, on_delete=models.CASCADE)
-    """
-    This field represents Survey of an SurveyQuestionOptions.
-    """
-    
     answer = models.TextField(_('Answer'), null=False, db_column='answer')
-    """
-    This field represents answer of an survey question.
-    """
-    
     chosenanswered_by = models.ForeignKey(AuthUser, verbose_name=_('Chosen Answer by'), db_column='answered_by_id', null=False, blank=False, on_delete=models.CASCADE)
-    """
-    This field represents the answer given by authuser.
-    """
-    
     answered_at = models.DateTimeField(_('Answerd At'), null=False, auto_now_add=True, db_column='answered_at')
-    """
-    This field represents a creation time of an Survey Question Answer.
-    """
     
     def __str__(self):
         return self.answer
